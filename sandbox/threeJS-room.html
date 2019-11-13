@@ -348,30 +348,26 @@
 
 	function animateCameraMovement() {
 		if (needToMove) {
-			let moving = false;
-			if (endPointX > currentX && ! ( ( endPointX - currentX ) === 0 )) {
+			if (endPointX > currentX &&  ( ( endPointX - currentX ) >  0.1 )) {
 				currentX += moveInXPercent;
-				moving = true;
-			} else if (endPointX < currentX && ! ( ( endPointX - currentX === 0 ) )) {
+			} else if (endPointX < currentX &&  ( (currentX - endPointX  > 0.1 ) )) {
 				currentX -= moveInXPercent;
-				moving = true;
-			}else {
-				needToMove = false;
 			}
-
-			if (endPointZ > currentZ && ! ( ( endPointZ - currentZ ) === 0 )) {
+			if (endPointZ > currentZ &&  ( ( endPointZ - currentZ ) > 0.1 )) {
 				currentZ += moveInZPercent;
-				moving = true;
-			} else if (endPointZ < currentZ && ! ( ( endPointZ - currentZ === 0 ) )) {
+			} else if (endPointZ < currentZ &&  ( (currentZ - endPointZ  > 0.1 ) )) {
 				currentZ -= moveInZPercent;
-				moving = true;
-			} else {
-				needToMove = false;
 			}
-			if (moving) {
-				camera.position.x = currentX;
-				camera.position.z = currentZ;
-			}
+			if(endPointX < currentX && endPointZ < currentZ && (currentZ - endPointZ  < 0.1 ) && (currentX - endPointX  < 0.1 )){
+			    needToMove = false;
+			}else if(endPointX > currentX && endPointZ > currentZ && (endPointZ - currentZ < 0.1 ) && (endPointX - currentX < 0.1 )){
+                needToMove = false;
+            }
+
+			camera.position.x = currentX;
+			camera.position.z = currentZ;
+
+
 		}
 
 		lat = Math.max( - 85, Math.min( 85, lat ) );
@@ -456,12 +452,10 @@
 			endPointX = intersects[0].point.x;
 			endPointZ = intersects[0].point.z;
 			needToMove = true;
-			let framesToMove = 90;
 
-			if(intersects[0].distance < 4){
-				framesToMove = 45;
-			}
-			if (currentX > endPointX) {
+            let framesToMove = intersects[0].distance * 10;
+
+            if (currentX > endPointX) {
 				moveInXPercent = ( currentX - endPointX ) / framesToMove;
 			} else {
 				moveInXPercent = ( endPointX - currentX ) / framesToMove;
