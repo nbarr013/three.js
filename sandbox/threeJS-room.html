@@ -22,13 +22,16 @@
 
 	import Stats from '../examples/jsm/libs/stats.module.js';
 	import { GUI } from '../examples/jsm/libs/dat.gui.module.js';
-
-	import { OrbitControls } from '../examples/jsm/controls/OrbitControls.js';
+    import { Sky } from '../examples/jsm/objects/Sky.js';
+    import { CSS3DRenderer, CSS3DObject } from '../examples/jsm/renderers/CSS3DRenderer.js';
 
 
 	var camera, scene, renderer,
 		bulbLight, bulbMat, hemiLight, stats, container;
 	var ballMat, cubeMat, floorMat, floorMesh;
+    var sky, sunSphere;
+
+
 
 
 	// ref for lumens: http://www.power-sure.com/lumens.htm
@@ -49,7 +52,8 @@
 		"0.002 lx (Night Airglow)": 0.002,
 		"0.5 lx (Full Moon)": 0.5,
 		"3.4 lx (City Twilight)": 3.4,
-		"50 lx (Living Room)": 50,
+        "25 lx (Test Room)": 25,
+        "50 lx (Living Room)": 50,
 		"100 lx (Very Overcast)": 100,
 		"350 lx (Office Room)": 350,
 		"400 lx (Sunrise/Sunset)": 400,
@@ -61,8 +65,8 @@
 	var params = {
 		shadows: true,
 		exposure: 0.68,
-		bulbPower: Object.keys( bulbLuminousPowers )[2],
-		hemiIrradiance: Object.keys( hemiLuminousIrradiances )[2]
+		bulbPower: Object.keys( bulbLuminousPowers )[1],
+		hemiIrradiance: Object.keys( hemiLuminousIrradiances )[4]
 	};
 
 
@@ -93,7 +97,56 @@
 	init();
 	animate();
 
-	function init() {
+    function initSky() {
+
+        // Add Sky
+        sky = new Sky();
+        sky.scale.setScalar( 450000 );
+        scene.add( sky );
+
+        // Add Sun Helper
+        sunSphere = new THREE.Mesh(
+            new THREE.SphereBufferGeometry( 20000, 16, 8 ),
+            new THREE.MeshBasicMaterial( { color: 0xffffff } )
+        );
+        sunSphere.position.y = - 700000;
+        sunSphere.visible = true;
+        scene.add( sunSphere );
+
+
+        var distance = 400000;
+
+        function updateSun() {
+
+            var uniforms = sky.material.uniforms;
+            uniforms[ "turbidity" ].value = 15.1;
+            uniforms[ "rayleigh" ].value = 1.162;
+            uniforms[ "mieCoefficient" ].value = 0.008;
+            uniforms[ "mieDirectionalG" ].value = 0.681;
+            uniforms[ "luminance" ].value = 1;
+
+            var theta = Math.PI * ( 0.1389 - 0.5 );
+            var phi = 2 * Math.PI * ( 0.2581 - 0.5 );
+
+            sunSphere.position.x = distance * Math.cos( phi );
+            sunSphere.position.y = distance * Math.sin( phi ) * Math.sin( theta );
+            sunSphere.position.z = distance * Math.sin( phi ) * Math.cos( theta );
+
+            sunSphere.visible = true;
+
+            uniforms[ "sunPosition" ].value.copy( sunSphere.position );
+
+            renderer.render( scene, camera );
+
+        }
+
+        updateSun();
+
+    }
+
+
+
+    function init() {
 
 		container = document.getElementById( 'container' );
 
@@ -278,8 +331,11 @@
 		gui.add( params, 'shadows' );
 		gui.open();
 
+        initSky();
 
-	}
+
+
+    }
 
 
 	function onWindowResize() {
@@ -453,7 +509,7 @@
 			endPointZ = intersects[0].point.z;
 			needToMove = true;
 
-            let framesToMove = intersects[0].distance * 10;
+            let framesToMove = intersects[0].distance * 10; // keeps constant rate of movement, raise to slow or lower to increase speed
 
             if (currentX > endPointX) {
 				moveInXPercent = ( currentX - endPointX ) / framesToMove;
