@@ -9,6 +9,9 @@
 <body>
 
 <div id="container"></div>
+
+<video id="video" style="display:none"></video>
+
 <div id="info">
 	<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - Physically accurate incandescent bulb by
 	<a href="http://clara.io" target="_blank" rel="noopener">Ben Houston</a><br/>
@@ -30,7 +33,7 @@
 		bulbLight, bulbMat, hemiLight, stats, container;
 	var ballMat, cubeMat, floorMat, floorMesh;
     var sky, sunSphere;
-
+    let finishDisplayGroup, videoWallMesh, video;
 
 
 
@@ -64,9 +67,9 @@
 
 	var params = {
 		shadows: true,
-		exposure: 0.68,
-		bulbPower: Object.keys( bulbLuminousPowers )[1],
-		hemiIrradiance: Object.keys( hemiLuminousIrradiances )[4]
+		exposure: 1,
+		bulbPower: Object.keys( bulbLuminousPowers )[2],
+		hemiIrradiance: Object.keys( hemiLuminousIrradiances )[5]
 	};
 
 
@@ -80,7 +83,7 @@
 	let currentZ = - 6;
 	let currentY = 2;
 
-	var helper;
+	var pointerHelper;
 	var raycaster = new THREE.Raycaster();
 	var mouse = new THREE.Vector2();
 	var intersection = null;
@@ -94,6 +97,7 @@
 	let needToMove = false;
 
 
+
 	init();
 	animate();
 
@@ -104,7 +108,7 @@
         sky.scale.setScalar( 450000 );
         scene.add( sky );
 
-        // Add Sun Helper
+        // Add Sun pointerHelper
         sunSphere = new THREE.Mesh(
             new THREE.SphereBufferGeometry( 20000, 16, 8 ),
             new THREE.MeshBasicMaterial( { color: 0xffffff } )
@@ -144,8 +148,6 @@
 
     }
 
-
-
     function init() {
 
 		container = document.getElementById( 'container' );
@@ -181,8 +183,10 @@
 			roughness: 0.8,
 			color: 0xffffff,
 			metalness: 0.2,
-			bumpScale: 0.0005
+			bumpScale: 0.0005,
+			side: THREE.DoubleSide
 		} );
+
 		var textureLoader = new THREE.TextureLoader();
 		textureLoader.load( "../examples/textures/hardwood2_diffuse.jpg", function ( map ) {
 
@@ -292,14 +296,138 @@
 		boxMesh3.castShadow = true;
 		scene.add( boxMesh3 );
 
-		var geometry = new THREE.RingGeometry( .2, .25, 30, 1, 6, 6.3 );
-		geometry.translate( 0, 0, - .01 );
-		geometry.rotateX( Math.PI / 2 );
-		helper = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {
+		//this is the pointer on the floor
+		let floorPointer = new THREE.RingGeometry( .2, .25, 30, 1, 6, 6.3 );
+        floorPointer.translate( 0, 0, - .01 );
+        floorPointer.rotateX( Math.PI / 2 );
+		pointerHelper = new THREE.Mesh( floorPointer, new THREE.MeshBasicMaterial( {
 			color: 0xfafafad4,
 			side: THREE.DoubleSide
 		} ) );
-		scene.add( helper );
+		scene.add( pointerHelper );
+
+
+
+
+		//load finish spheres
+        finishDisplayGroup = new THREE.Group();
+        scene.add( finishDisplayGroup );
+        var finishSphere = new THREE.SphereBufferGeometry( .2, 64, 32 );
+
+        var diffuse = textureLoader.load( "../examples/textures/carbon/Carbon.png" );
+        diffuse.encoding = THREE.sRGBEncoding;
+        diffuse.wrapS = THREE.RepeatWrapping;
+        diffuse.wrapT = THREE.RepeatWrapping;
+        diffuse.repeat.x = 10;
+        diffuse.repeat.y = 10;
+
+        var normalMap = textureLoader.load( "../examples/textures/carbon/Carbon_Normal.png" );
+        normalMap.wrapS = THREE.RepeatWrapping;
+        normalMap.wrapT = THREE.RepeatWrapping;
+
+        var normalMap2 = textureLoader.load( "../examples/textures/water/Water_1_M_Normal.jpg" );
+
+        var normalMap3 = textureLoader.load( "../examples/textures/flakes.png" );
+        normalMap3.wrapS = THREE.RepeatWrapping;
+        normalMap3.wrapT = THREE.RepeatWrapping;
+        normalMap3.repeat.x = 10;
+        normalMap3.repeat.y = 10;
+        normalMap3.anisotropy = 16;
+
+        var normalMap4 = textureLoader.load( "../examples/textures/golfball.jpg" );
+
+        var clearcoatNormaMap = textureLoader.load( "../examples/textures/pbr/Scratched_gold/Scratched_gold_01_1K_Normal.png" );
+
+        // car paint
+
+        var material = new THREE.MeshPhysicalMaterial( {
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.1,
+            metalness: 0.9,
+            roughness: 0.5,
+            color: 0x0000ff,
+            normalMap: normalMap3,
+            normalScale: new THREE.Vector2( 0.1, 0.1 )
+        } );
+
+        var mesh = new THREE.Mesh( finishSphere, material );
+        mesh.position.x = - 4;
+        mesh.position.y = 1.5;
+        mesh.position.z = -3;
+
+        finishDisplayGroup.add( mesh );
+
+        // fibers
+
+        var material = new THREE.MeshPhysicalMaterial( {
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.1,
+            map: diffuse,
+            normalMap: normalMap
+        } );
+        var mesh = new THREE.Mesh( finishSphere, material );
+        mesh.position.x = - 4;
+        mesh.position.y = 1.5;
+        mesh.position.z = 0;
+        finishDisplayGroup.add( mesh );
+
+        // golf
+
+        var material = new THREE.MeshPhysicalMaterial( {
+            metalness: 0.0,
+            roughness: 0.1,
+            clearcoat: 1.0,
+            normalMap: normalMap4,
+            clearcoatNormalMap: clearcoatNormaMap,
+            clearcoatNormalScale: new THREE.Vector2( 2.0, 2.0 )
+        } );
+        var mesh = new THREE.Mesh( finishSphere, material );
+        mesh.position.x = - 4;
+        mesh.position.y = 1.5;
+        mesh.position.z = 3;
+        finishDisplayGroup.add( mesh );
+
+        // clearcoat + normalmap
+
+        var material = new THREE.MeshPhysicalMaterial( {
+            clearcoat: 1.0,
+            metalness: 1.0,
+            color: 0xff0000,
+            normalMap: normalMap2,
+            normalScale: new THREE.Vector2( 0.15, 0.15 ),
+            clearcoatNormalMap: clearcoatNormaMap,
+            clearcoatNormalScale: new THREE.Vector2( 2.0, 2.0 )
+        } );
+        var mesh = new THREE.Mesh( finishSphere, material );
+        mesh.position.x = - 4;
+        mesh.position.y = 1.5;
+        mesh.position.z = 6;
+
+        finishDisplayGroup.add( mesh );
+
+
+
+
+        // var videoWallGeometry = new THREE.PlaneBufferGeometry( 20, 10 );
+        // videoWallMesh = new THREE.Mesh( videoWallGeometry, floorMat );
+        // videoWallMesh.receiveShadow = false;
+        // videoWallMesh.position.y = 5;
+        // videoWallMesh.position.x = 10;
+        // videoWallGeometry.computeFaceNormals();
+        // scene.add( videoWallMesh );
+
+        video = document.getElementById( 'video' );
+        var videoTexture = new THREE.VideoTexture( video );
+        var videoWallGeometry = new THREE.PlaneBufferGeometry( 16, 9 );
+        var videoMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, side: THREE.DoubleSide} );
+		var videoMesh = new THREE.Mesh( videoWallGeometry, videoMaterial );
+        videoMesh.position.y = 5;
+        videoMesh.position.x = 10;
+        videoMesh.receiveShadow = false;
+        videoMaterial.aoMapIntensity = 0;
+		scene.add( videoMesh );
+        video.src = "mp4_Boat-in-Caramoan.mp4";
+        video.play();
 
 
 		renderer = new THREE.WebGLRenderer();
@@ -469,7 +597,7 @@
 		hemiLight.intensity = hemiLuminousIrradiances[params.hemiIrradiance];
 		var time = Date.now() * 0.0005;
 
-		bulbLight.position.y = Math.cos( time ) * 0.75 + 1.25;
+		bulbLight.position.y = Math.cos( time ) * 10 + 1.25;
 
 
 		animateCameraMovement();
@@ -489,9 +617,9 @@
 		var intersects = raycaster.intersectObject( floorMesh );
 
 		if (intersects.length > 0) {
-			helper.position.set( 0, 0, 0 );
-			helper.lookAt( intersects[0].face.normal );
-			helper.position.copy( intersects[0].point );
+			pointerHelper.position.set( 0, 0, 0 );
+			pointerHelper.lookAt( intersects[0].face.normal );
+			pointerHelper.position.copy( intersects[0].point );
 		}
 
 	}
