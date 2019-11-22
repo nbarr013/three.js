@@ -29,7 +29,7 @@
 	var camera, scene, renderer, container;
 	var ballMat, cubeMat, floorMat, floorMesh;
     var sky, sunSphere, dirLight, dirLightHeper, hemiLight, hemiLightHelper;
-    let finishDisplayGroup, video;
+    let finishDisplayGroup, video, videoMesh;
 
     var clock = new THREE.Clock();
 
@@ -328,7 +328,7 @@
         mesh.position.x = - 4;
         mesh.position.y = 1.5;
         mesh.position.z = -3;
-
+		mesh.castShadow = true;
         finishDisplayGroup.add( mesh );
 
         // fibers
@@ -343,6 +343,8 @@
         mesh.position.x = - 4;
         mesh.position.y = 1.5;
         mesh.position.z = 0;
+        mesh.castShadow = true;
+
         finishDisplayGroup.add( mesh );
 
         // golf
@@ -359,6 +361,8 @@
         mesh.position.x = - 4;
         mesh.position.y = 1.5;
         mesh.position.z = 3;
+        mesh.castShadow = true;
+
         finishDisplayGroup.add( mesh );
 
         // clearcoat + normalmap
@@ -376,31 +380,24 @@
         mesh.position.x = - 4;
         mesh.position.y = 1.5;
         mesh.position.z = 6;
+        mesh.castShadow = true;
 
         finishDisplayGroup.add( mesh );
 
 
-        // var videoWallGeometry = new THREE.PlaneBufferGeometry( 20, 10 );
-        // videoWallMesh = new THREE.Mesh( videoWallGeometry, floorMat );
-        // videoWallMesh.receiveShadow = false;
-        // videoWallMesh.position.y = 5;
-        // videoWallMesh.position.x = 10;
-        // videoWallGeometry.computeFaceNormals();
-        // scene.add( videoWallMesh );
-
         video = document.getElementById( 'video' );
         var videoTexture = new THREE.VideoTexture( video );
-        var videoWallGeometry = new THREE.PlaneBufferGeometry( 16, 9 );
+        var videoWallGeometry = new THREE.PlaneBufferGeometry( 20, 11 );
         var videoMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, side: THREE.DoubleSide} );
-		var videoMesh = new THREE.Mesh( videoWallGeometry, videoMaterial );
-        videoMesh.position.y = 5;
-        videoMesh.position.x = 10;
+		videoMesh = new THREE.Mesh( videoWallGeometry, videoMaterial );
+        videoMesh.position.y = 4.5;
+        videoMesh.position.z = 10;
         videoMesh.receiveShadow = false;
         videoMaterial.aoMapIntensity = 0;
 		scene.add( videoMesh );
         video.src = "mp4_Boat-in-Caramoan.mp4";
-        video.play();
-
+		video.play();
+		video.loop = true;
 
 		renderer = new THREE.WebGLRenderer();
 		renderer.physicallyCorrectLights = true;
@@ -464,7 +461,7 @@
 		//Move Camera Position On Click
 		let compareMousePosition = [ event.pageX, event.pageY ];
 		if (JSON.stringify( compareMousePosition ) === JSON.stringify( currentMousePos )) {
-			onFloorClickToMove( event );
+			clickEvent( event );
 		}
 	}
 
@@ -569,35 +566,51 @@
 	}
 
 
-	function onFloorClickToMove( event ) {
+	function clickEvent( event ) {
 		mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
 		mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
 		raycaster.setFromCamera( mouse, camera );
 		// See if the ray from the camera into the world hits one of our meshes
-		var intersects = raycaster.intersectObject( floorMesh );
-		// Toggle rotation bool for meshes that we clicked
-		if (intersects.length > 0) {
-			endPointX = intersects[0].point.x;
-			endPointZ = intersects[0].point.z;
-			needToMove = true;
+		floorClick();
+		videoClick();
+
+	}
+
+	function videoClick() {
+        var intersects = raycaster.intersectObject( videoMesh );
+        if (intersects.length > 0) {
+            if(video.paused === true){
+                video.play();
+                video.controls = false;
+
+            }else{
+                video.pause();
+                video.controls = true;
+			}
+        }
+    }
+
+	function floorClick() {
+        var intersects = raycaster.intersectObject( floorMesh );
+        if (intersects.length > 0) {
+            endPointX = intersects[0].point.x;
+            endPointZ = intersects[0].point.z;
+            needToMove = true;
 
             let framesToMove = intersects[0].distance * 10; // keeps constant rate of movement, raise to slow or lower to increase speed
 
             if (currentX > endPointX) {
-				moveInXPercent = ( currentX - endPointX ) / framesToMove;
-			} else {
-				moveInXPercent = ( endPointX - currentX ) / framesToMove;
-			}
-			if (currentZ > endPointZ) {
-				moveInZPercent = ( currentZ - endPointZ ) / framesToMove;
-			} else {
-				moveInZPercent = ( endPointZ - currentZ ) / framesToMove;
-			}
-		}
-
-
-	}
-
+                moveInXPercent = ( currentX - endPointX ) / framesToMove;
+            } else {
+                moveInXPercent = ( endPointX - currentX ) / framesToMove;
+            }
+            if (currentZ > endPointZ) {
+                moveInZPercent = ( currentZ - endPointZ ) / framesToMove;
+            } else {
+                moveInZPercent = ( endPointZ - currentZ ) / framesToMove;
+            }
+        }
+    }
 
 </script>
 </body>
