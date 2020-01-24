@@ -37,6 +37,8 @@
 	let video, videoMesh;
 	let composer, effectFXAA, outlinePass;
 
+	let outsideGrassMat, grassMesh, asphaltMat, asphaltMesh, ceilingMat, ceilingMesh;
+
 	outlinePass = {
 		edgeStrength: 3.6,
 		edgeGlow: 0,
@@ -237,6 +239,151 @@
 		}));
 		scene.add(pointerHelper);
 
+	}
+
+	function loadOutsideGrass() {
+		outsideGrassMat = new THREE.MeshStandardMaterial({
+			roughness: 1,
+			color: 0xffffff,
+			metalness: 0,
+			bumpScale: 0.1,
+			side: THREE.DoubleSide
+		});
+		textureLoader.load("../examples/textures/sandbox/Grass_001_SD/Grass_001_COLOR.jpg", function (map) {
+
+			map.wrapS = THREE.RepeatWrapping;
+			map.wrapT = THREE.RepeatWrapping;
+			map.anisotropy = 4;
+			map.repeat.set(10, 24);
+			outsideGrassMat.map = map;
+			outsideGrassMat.needsUpdate = true;
+
+		});
+		textureLoader.load("../examples/textures/sandbox/Grass_001_SD/Grass_001_OCC.jpg.jpg", function (map) {
+
+			map.wrapS = THREE.RepeatWrapping;
+			map.wrapT = THREE.RepeatWrapping;
+			map.anisotropy = 4;
+			map.repeat.set(10, 24);
+			outsideGrassMat.bumpMap = map;
+			outsideGrassMat.needsUpdate = true;
+
+		});
+		textureLoader.load("../examples/textures/sandbox/Grass_001_SD/Grass_001_ROUGH.jpg", function (map) {
+
+			map.wrapS = THREE.RepeatWrapping;
+			map.wrapT = THREE.RepeatWrapping;
+			map.anisotropy = 4;
+			map.repeat.set(10, 24);
+			outsideGrassMat.roughnessMap = map;
+			outsideGrassMat.needsUpdate = true;
+
+		});
+
+		let grassGeometry = new THREE.PlaneBufferGeometry(60, 60);
+		grassMesh = new THREE.Mesh(grassGeometry, outsideGrassMat);
+		grassMesh.receiveShadow = false;
+		grassMesh.rotation.x = -Math.PI / 2.0;
+		grassMesh.position.set(0, -.1, 0);
+		grassGeometry.computeFaceNormals();
+		scene.add(grassMesh);
+		console.log(grassMesh);
+	}
+
+	function loadOutsideAsphalt() {
+		asphaltMat = new THREE.MeshStandardMaterial({
+			roughness: 1,
+			color: 0xffffff,
+			metalness: 0,
+			bumpScale: 0.1,
+			side: THREE.DoubleSide
+		});
+		textureLoader.load("../examples/textures/sandbox/Asphalt_002_SD/Asphalt_002_COLOR.jpg", function (map) {
+
+			map.wrapS = THREE.RepeatWrapping;
+			map.wrapT = THREE.RepeatWrapping;
+			map.anisotropy = 4;
+			map.repeat.set(10, 24);
+			asphaltMat.map = map;
+			asphaltMat.needsUpdate = true;
+
+		});
+		textureLoader.load("../examples/textures/sandbox/Asphalt_002_SD/Asphalt_002_OCC.jpg.jpg", function (map) {
+
+			map.wrapS = THREE.RepeatWrapping;
+			map.wrapT = THREE.RepeatWrapping;
+			map.anisotropy = 4;
+			map.repeat.set(10, 24);
+			asphaltMat.bumpMap = map;
+			asphaltMat.needsUpdate = true;
+
+		});
+		textureLoader.load("../examples/textures/sandbox/Asphalt_002_SD/Asphalt_002_ROUGH.jpg", function (map) {
+
+			map.wrapS = THREE.RepeatWrapping;
+			map.wrapT = THREE.RepeatWrapping;
+			map.anisotropy = 4;
+			map.repeat.set(10, 24);
+			asphaltMat.roughnessMap = map;
+			asphaltMat.needsUpdate = true;
+
+		});
+
+		let asphaltGeometry = new THREE.PlaneBufferGeometry(30, 20);
+		asphaltMesh = new THREE.Mesh(asphaltGeometry, asphaltMat);
+		asphaltMesh.receiveShadow = false;
+		asphaltMesh.rotation.x = -Math.PI / 2.0;
+		asphaltMesh.position.set(20, -.05, 0);
+		asphaltGeometry.computeFaceNormals();
+		scene.add(asphaltMesh);
+	}
+
+	function loadCeiling() {
+		ceilingMat = new THREE.MeshStandardMaterial({
+			roughness: 1,
+			color: 0xffffff,
+			metalness: 0,
+			bumpScale: 0.1,
+			side: THREE.DoubleSide
+		});
+		textureLoader.load("../examples/textures/sandbox/Tiles_013_SD/Tiles_013_COLOR.jpg", function (map) {
+
+			map.wrapS = THREE.RepeatWrapping;
+			map.wrapT = THREE.RepeatWrapping;
+			map.anisotropy = 4;
+			map.repeat.set(10, 24);
+			ceilingMat.map = map;
+			ceilingMat.needsUpdate = true;
+
+		});
+		textureLoader.load("../examples/textures/sandbox/Tiles_013_SD/ATiles_013_OCC.jpg.jpg", function (map) {
+
+			map.wrapS = THREE.RepeatWrapping;
+			map.wrapT = THREE.RepeatWrapping;
+			map.anisotropy = 4;
+			map.repeat.set(10, 24);
+			ceilingMat.bumpMap = map;
+			ceilingMat.needsUpdate = true;
+
+		});
+		textureLoader.load("../examples/textures/sandbox/Tiles_013_SD/Tiles_013_ROUGH.jpg", function (map) {
+
+			map.wrapS = THREE.RepeatWrapping;
+			map.wrapT = THREE.RepeatWrapping;
+			map.anisotropy = 4;
+			map.repeat.set(10, 24);
+			ceilingMat.roughnessMap = map;
+			ceilingMat.needsUpdate = true;
+
+		});
+
+		let ceilingGeometry = new THREE.PlaneBufferGeometry(20, 20);
+		ceilingMesh = new THREE.Mesh(ceilingGeometry, ceilingMat);
+		ceilingMesh.receiveShadow = false;
+		ceilingMesh.rotation.x = -Math.PI / 2.0;
+		ceilingMesh.position.set(0, 10, 0);
+		ceilingGeometry.computeFaceNormals();
+		scene.add(ceilingMesh);
 	}
 
 	function loadDefaultObjects() {
@@ -470,6 +617,15 @@
 
 	}
 
+	function initOrbitControls() {
+		controls = new OrbitControls( camera, renderer.domElement );
+		controls.screenSpacePanning = false;
+		controls.minDistance = 1;
+		controls.maxDistance = 3;
+		controls.maxPolarAngle = Math.PI / 2;
+		controls.enabled = false;
+	}
+
 	function init() {
 
 		container = document.getElementById('container');
@@ -484,6 +640,12 @@
 		textureLoader = new THREE.TextureLoader();
 
 		loadFloor();
+
+		loadOutsideGrass();
+
+		loadOutsideAsphalt();
+
+		loadCeiling();
 
 		loadDefaultObjects();
 
@@ -500,6 +662,8 @@
 		initOcean();
 
 		initPostProcessing();
+
+		initOrbitControls();
 
 	}
 
@@ -552,36 +716,43 @@
 	}
 
 	function animateCameraMovement() {
-		if (needToMove) {
-			if (endPointX > currentX && ((endPointX - currentX) > 0.1)) {
-				currentX += moveInXPercent;
-			} else if (endPointX < currentX && ((currentX - endPointX > 0.1))) {
-				currentX -= moveInXPercent;
-			}
-			if (endPointZ > currentZ && ((endPointZ - currentZ) > 0.1)) {
-				currentZ += moveInZPercent;
-			} else if (endPointZ < currentZ && ((currentZ - endPointZ > 0.1))) {
-				currentZ -= moveInZPercent;
-			}
-			if (endPointX < currentX && endPointZ < currentZ && (currentZ - endPointZ < 0.1) && (currentX - endPointX < 0.1)) {
-				needToMove = false;
-			} else if (endPointX > currentX && endPointZ > currentZ && (endPointZ - currentZ < 0.1) && (endPointX - currentX < 0.1)) {
-				needToMove = false;
-			}
-			camera.position.x = currentX;
-			camera.position.z = currentZ;
 
+		if(orbitControlsDisabled) {
+
+			if (needToMove) {
+				if (endPointX > currentX && ((endPointX - currentX) > 0.1)) {
+					currentX += moveInXPercent;
+				} else if (endPointX < currentX && ((currentX - endPointX > 0.1))) {
+					currentX -= moveInXPercent;
+				}
+				if (endPointZ > currentZ && ((endPointZ - currentZ) > 0.1)) {
+					currentZ += moveInZPercent;
+				} else if (endPointZ < currentZ && ((currentZ - endPointZ > 0.1))) {
+					currentZ -= moveInZPercent;
+				}
+				if (endPointX < currentX && endPointZ < currentZ && (currentZ - endPointZ < 0.1) && (currentX - endPointX < 0.1)) {
+					needToMove = false;
+				} else if (endPointX > currentX && endPointZ > currentZ && (endPointZ - currentZ < 0.1) && (endPointX - currentX < 0.1)) {
+					needToMove = false;
+				}
+
+				camera.position.x = currentX;
+				camera.position.z = currentZ;
+				camera.position.y = currentY;
+
+			}
+
+			lat = Math.max(-85, Math.min(85, lat));
+			phi = THREE.Math.degToRad(90 - lat);
+			theta = THREE.Math.degToRad(lon);
+
+			target.x = Math.sin(phi) * Math.cos(theta) + currentX;
+			target.y = Math.cos(phi) + currentY;
+			target.z = Math.sin(phi) * Math.sin(theta) + currentZ;
+			camera.lookAt(target);
+		}else{
+			controls.update();
 		}
-
-		lat = Math.max(-85, Math.min(85, lat));
-		phi = THREE.Math.degToRad(90 - lat);
-		theta = THREE.Math.degToRad(lon);
-
-		target.x = Math.sin(phi) * Math.cos(theta) + currentX;
-		target.y = Math.cos(phi) + currentY;
-		target.z = Math.sin(phi) * Math.sin(theta) + currentZ;
-		camera.lookAt(target);
-
 
 	}
 
@@ -673,6 +844,12 @@
 
 	function floorClick() {
 
+		if(!orbitControlsDisabled){
+			orbitControlsDisabled = true;
+			controls.enabled = false;
+
+		}
+
 		let multipleIntersects = raycaster.intersectObjects(scene.children);
 		let intersects = raycaster.intersectObject(floorMesh);
 
@@ -697,14 +874,16 @@
 	}
 
 	function globeClick() {
+
 		if (doesIntersect(globeMesh)) {
 			updateBallMat = !updateBallMat;
 
-			/*            if(updateBallMat){
-							var controls = new OrbitControls( camera, renderer.domElement );
-							controls.autoRotate = true;
-							controls.target = new THREE.Vector3({x: globeMesh.position.x, y: globeMesh.position.y,z: globeMesh.position.z });
-						}*/
+			orbitControlsDisabled = false;
+			camera.position.set( globeMesh.position.x + 1, globeMesh.position.x + 1, globeMesh.position.x + 1);
+			camera.lookAt(globeMesh.position.x , globeMesh.position.y, globeMesh.position.z);
+			controls.enabled = true;
+
+
 		}
 	}
 
