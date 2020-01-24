@@ -62,6 +62,7 @@
 	let currentX = -2;
 	let currentZ = -6;
 	let currentY = 2;
+	let enoughDistance = .1;
 
 	let pointerHelper;
 	let raycaster = new THREE.Raycaster();
@@ -228,6 +229,7 @@
 		floorMesh = new THREE.Mesh(floorGeometry, floorMat);
 		floorMesh.receiveShadow = true;
 		floorMesh.rotation.x = -Math.PI / 2.0;
+		//floorMesh.position.set(0, -.1, 0);
 		floorGeometry.computeFaceNormals();
 		scene.add(floorMesh);
 
@@ -286,7 +288,7 @@
 		grassMesh = new THREE.Mesh(grassGeometry, outsideGrassMat);
 		grassMesh.receiveShadow = false;
 		grassMesh.rotation.x = -Math.PI / 2.0;
-		grassMesh.position.set(0, -.1, 0);
+		grassMesh.position.set(0, -.2, 0);
 		grassGeometry.computeFaceNormals();
 		scene.add(grassMesh);
 	}
@@ -722,43 +724,41 @@
 
 	function animateCameraMovement() {
 
+		if (needToMove && controls.enabled === false) { //checking to make sure we arrived at the destination
 
-		if (needToMove && controls.enabled === false) {
-			if (endPointX > currentX && ((endPointX - currentX) > 0.1)) {
+			if (endPointX > currentX && ((endPointX - currentX) > enoughDistance)) {
 				currentX += moveInXPercent;
-			} else if (endPointX < currentX && ((currentX - endPointX > 0.1))) {
+			} else if (endPointX < currentX && ((currentX - endPointX > enoughDistance))) {
 				currentX -= moveInXPercent;
 			}
-			if (endPointZ > currentZ && ((endPointZ - currentZ) > 0.1)) {
+			if (endPointZ > currentZ && ((endPointZ - currentZ) > enoughDistance)) {
 				currentZ += moveInZPercent;
-			} else if (endPointZ < currentZ && ((currentZ - endPointZ > 0.1))) {
+			} else if (endPointZ < currentZ && ((currentZ - endPointZ > enoughDistance))) {
 				currentZ -= moveInZPercent;
 			}
-			if (endPointY > currentY && ((endPointY - currentY) > 0.1)) {
+			if (endPointY > currentY && ((endPointY - currentY) > enoughDistance)) {
 				currentY += moveInYPercent;
-			} else if (endPointZ < currentZ && ((currentY - endPointY > 0.1))) {
+			} else if (endPointZ < currentZ && ((currentY - endPointY > enoughDistance))) {
 				currentY -= moveInYPercent;
 			}
-			if (endPointX < currentX && endPointZ < currentZ && (currentZ - endPointZ < 0.1) && (currentX - endPointX < 0.1)) {
+			if (endPointX < currentX && endPointZ < currentZ && (currentZ - endPointZ < enoughDistance) && (currentX - endPointX < enoughDistance)) {
+				needToMove = false;
+
+				if (!orbitControlsDisabled) { //if we clicked on item, we need to arrive, then trigger orbit controls
+					controls.enabled = true;
+					controls.update();
+				}
+
+			} else if (endPointX > currentX && endPointZ > currentZ && (endPointZ - currentZ < enoughDistance) && (endPointX - currentX < enoughDistance)) {
 				needToMove = false;
 
 				if (!orbitControlsDisabled) {
 					controls.enabled = true;
 					controls.update();
 				}
-
-			} else if (endPointX > currentX && endPointZ > currentZ && (endPointZ - currentZ < 0.1) && (endPointX - currentX < 0.1)) {
-				needToMove = false;
-
-				if (!orbitControlsDisabled) {
-					controls.enabled = true;
-					controls.update();
-
-				}
-
 			}
 
-			if(controls.enabled === false) {
+			if(controls.enabled === false) { //update camera if not in orbit
 				camera.position.x = currentX;
 				camera.position.z = currentZ;
 				camera.position.y = currentY;
@@ -776,14 +776,19 @@
 		if(controls.enabled === false) {
 			camera.lookAt(target);
 		}
-		if (!orbitControlsDisabled) {
+		if (!orbitControlsDisabled) { //update orbit controls for animation, and update camera positioning for exiting orbit controls
 			controls.update();
 
-			let wpVector = new THREE.Vector3();
-			let cameraCoord = camera.getWorldPosition(wpVector);
+			let suppressWarnings = new THREE.Vector3();// not sure why we need this, but it throws hella warnings if we don't.
+			let cameraCoord = camera.getWorldPosition(suppressWarnings);
+
 			currentX = cameraCoord.x;
 			currentY = cameraCoord.y;
 			currentZ = cameraCoord.z;
+
+			target.x = Math.sin(phi) * Math.cos(theta) + currentX;
+			target.y = Math.cos(phi) + currentY;
+			target.z = Math.sin(phi) * Math.sin(theta) + currentZ;
 		}
 
 	}
@@ -898,10 +903,11 @@
 
 	function floorClick() {
 
+		enoughDistance = .1;
+
 		if (!orbitControlsDisabled) {
 			orbitControlsDisabled = true;
 			controls.enabled = false;
-
 		}
 
 		let multipleIntersects = raycaster.intersectObjects(scene.children);
@@ -918,7 +924,7 @@
 
 		if (doesIntersect(globeMesh)) {
 			updateBallMat = !updateBallMat;
-
+			enoughDistance = .2;
 			orbitControlsDisabled = false;
 			let intersects = raycaster.intersectObject(globeMesh);
 			setMovingCoordinates(globeMesh.position.x, globeMesh.position.y, globeMesh.position.z, intersects[0].distance)
