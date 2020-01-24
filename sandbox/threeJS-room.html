@@ -72,8 +72,10 @@
 
 	let endPointX = -2;
 	let endPointZ = -6;
+	let endPointY = 2;
 	let moveInXPercent = 0;
 	let moveInZPercent = 0;
+	let moveInYPercent = 0;
 	let needToMove = false;
 
 
@@ -259,7 +261,7 @@
 			outsideGrassMat.needsUpdate = true;
 
 		});
-		textureLoader.load("../examples/textures/sandbox/Grass_001_SD/Grass_001_OCC.jpg.jpg", function (map) {
+		textureLoader.load("../examples/textures/sandbox/Grass_001_SD/Grass_001_OCC.jpg", function (map) {
 
 			map.wrapS = THREE.RepeatWrapping;
 			map.wrapT = THREE.RepeatWrapping;
@@ -287,7 +289,6 @@
 		grassMesh.position.set(0, -.1, 0);
 		grassGeometry.computeFaceNormals();
 		scene.add(grassMesh);
-		console.log(grassMesh);
 	}
 
 	function loadOutsideAsphalt() {
@@ -308,7 +309,7 @@
 			asphaltMat.needsUpdate = true;
 
 		});
-		textureLoader.load("../examples/textures/sandbox/Asphalt_002_SD/Asphalt_002_OCC.jpg.jpg", function (map) {
+		textureLoader.load("../examples/textures/sandbox/Asphalt_002_SD/Asphalt_002_OCC.jpg", function (map) {
 
 			map.wrapS = THREE.RepeatWrapping;
 			map.wrapT = THREE.RepeatWrapping;
@@ -356,7 +357,7 @@
 			ceilingMat.needsUpdate = true;
 
 		});
-		textureLoader.load("../examples/textures/sandbox/Tiles_013_SD/ATiles_013_OCC.jpg.jpg", function (map) {
+		textureLoader.load("../examples/textures/sandbox/Tiles_013_SD/Tiles_013_OCC.jpg", function (map) {
 
 			map.wrapS = THREE.RepeatWrapping;
 			map.wrapT = THREE.RepeatWrapping;
@@ -618,12 +619,16 @@
 	}
 
 	function initOrbitControls() {
-		controls = new OrbitControls( camera, renderer.domElement );
+		controls = new OrbitControls(camera, renderer.domElement);
 		controls.screenSpacePanning = false;
 		controls.minDistance = 1;
 		controls.maxDistance = 3;
 		controls.maxPolarAngle = Math.PI / 2;
 		controls.enabled = false;
+		controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+		controls.dampingFactor = 0.05;
+		controls.autoRotate = true;
+		controls.autoRotateSpeed = .5;
 	}
 
 	function init() {
@@ -717,41 +722,68 @@
 
 	function animateCameraMovement() {
 
-		if(orbitControlsDisabled) {
 
-			if (needToMove) {
-				if (endPointX > currentX && ((endPointX - currentX) > 0.1)) {
-					currentX += moveInXPercent;
-				} else if (endPointX < currentX && ((currentX - endPointX > 0.1))) {
-					currentX -= moveInXPercent;
-				}
-				if (endPointZ > currentZ && ((endPointZ - currentZ) > 0.1)) {
-					currentZ += moveInZPercent;
-				} else if (endPointZ < currentZ && ((currentZ - endPointZ > 0.1))) {
-					currentZ -= moveInZPercent;
-				}
-				if (endPointX < currentX && endPointZ < currentZ && (currentZ - endPointZ < 0.1) && (currentX - endPointX < 0.1)) {
-					needToMove = false;
-				} else if (endPointX > currentX && endPointZ > currentZ && (endPointZ - currentZ < 0.1) && (endPointX - currentX < 0.1)) {
-					needToMove = false;
+		if (needToMove && controls.enabled === false) {
+			if (endPointX > currentX && ((endPointX - currentX) > 0.1)) {
+				currentX += moveInXPercent;
+			} else if (endPointX < currentX && ((currentX - endPointX > 0.1))) {
+				currentX -= moveInXPercent;
+			}
+			if (endPointZ > currentZ && ((endPointZ - currentZ) > 0.1)) {
+				currentZ += moveInZPercent;
+			} else if (endPointZ < currentZ && ((currentZ - endPointZ > 0.1))) {
+				currentZ -= moveInZPercent;
+			}
+			if (endPointY > currentY && ((endPointY - currentY) > 0.1)) {
+				currentY += moveInYPercent;
+			} else if (endPointZ < currentZ && ((currentY - endPointY > 0.1))) {
+				currentY -= moveInYPercent;
+			}
+			if (endPointX < currentX && endPointZ < currentZ && (currentZ - endPointZ < 0.1) && (currentX - endPointX < 0.1)) {
+				needToMove = false;
+
+				if (!orbitControlsDisabled) {
+					controls.enabled = true;
+					controls.update();
 				}
 
-				camera.position.x = currentX;
-				camera.position.z = currentZ;
-				camera.position.y = currentY;
+			} else if (endPointX > currentX && endPointZ > currentZ && (endPointZ - currentZ < 0.1) && (endPointX - currentX < 0.1)) {
+				needToMove = false;
+
+				if (!orbitControlsDisabled) {
+					controls.enabled = true;
+					controls.update();
+
+				}
 
 			}
 
-			lat = Math.max(-85, Math.min(85, lat));
-			phi = THREE.Math.degToRad(90 - lat);
-			theta = THREE.Math.degToRad(lon);
+			if(controls.enabled === false) {
+				camera.position.x = currentX;
+				camera.position.z = currentZ;
+				camera.position.y = currentY;
+			}
+		}
 
-			target.x = Math.sin(phi) * Math.cos(theta) + currentX;
-			target.y = Math.cos(phi) + currentY;
-			target.z = Math.sin(phi) * Math.sin(theta) + currentZ;
+		lat = Math.max(-85, Math.min(85, lat));
+		phi = THREE.Math.degToRad(90 - lat);
+		theta = THREE.Math.degToRad(lon);
+
+		target.x = Math.sin(phi) * Math.cos(theta) + currentX;
+		target.y = Math.cos(phi) + currentY;
+		target.z = Math.sin(phi) * Math.sin(theta) + currentZ;
+
+		if(controls.enabled === false) {
 			camera.lookAt(target);
-		}else{
+		}
+		if (!orbitControlsDisabled) {
 			controls.update();
+
+			let wpVector = new THREE.Vector3();
+			let cameraCoord = camera.getWorldPosition(wpVector);
+			currentX = cameraCoord.x;
+			currentY = cameraCoord.y;
+			currentZ = cameraCoord.z;
 		}
 
 	}
@@ -801,21 +833,43 @@
 		let intersects = raycaster.intersectObject(meshToTest);
 		if (intersects.length > 0) {
 			return meshToTest.uuid === intersects[0].object.uuid;
-		}else{
+		} else {
 			return false;
+		}
+	}
+
+	function setMovingCoordinates(x, y, z, distance) {
+		endPointX = x;
+		endPointZ = z;
+		needToMove = true;
+		let framesToMove = distance * 10; // keeps constant rate of movement, raise to slow or lower to increase speed
+		if (currentX > endPointX) {
+			moveInXPercent = (currentX - endPointX) / framesToMove;
+		} else {
+			moveInXPercent = (endPointX - currentX) / framesToMove;
+		}
+		if (currentZ > endPointZ) {
+			moveInZPercent = (currentZ - endPointZ) / framesToMove;
+		} else {
+			moveInZPercent = (endPointZ - currentZ) / framesToMove;
+		}
+		if (currentY > endPointY) {
+			moveInYPercent = (currentY - endPointY) / framesToMove;
+		} else {
+			moveInYPercent = (endPointY - currentY) / framesToMove;
 		}
 	}
 
 	function checkForHoverOnItems() {
 		let objsToCheck = [videoMesh, globeMesh, boxMesh, boxMesh2, boxMesh3];
 		let noIntersection = true;
-		for (let i = 0; i < objsToCheck.length; i++){
+		for (let i = 0; i < objsToCheck.length; i++) {
 			if (doesIntersect(objsToCheck[i])) {
 				outlinePass.selectedObjects = [objsToCheck[i]];
 				noIntersection = false;
 			}
 		}
-		if(noIntersection){
+		if (noIntersection) {
 			outlinePass.selectedObjects = [];
 		}
 	}
@@ -844,7 +898,7 @@
 
 	function floorClick() {
 
-		if(!orbitControlsDisabled){
+		if (!orbitControlsDisabled) {
 			orbitControlsDisabled = true;
 			controls.enabled = false;
 
@@ -855,20 +909,7 @@
 
 		if (intersects.length > 0) {
 			if (multipleIntersects[0].object.uuid === floorMesh.uuid) {
-				endPointX = intersects[0].point.x;
-				endPointZ = intersects[0].point.z;
-				needToMove = true;
-				let framesToMove = intersects[0].distance * 10; // keeps constant rate of movement, raise to slow or lower to increase speed
-				if (currentX > endPointX) {
-					moveInXPercent = (currentX - endPointX) / framesToMove;
-				} else {
-					moveInXPercent = (endPointX - currentX) / framesToMove;
-				}
-				if (currentZ > endPointZ) {
-					moveInZPercent = (currentZ - endPointZ) / framesToMove;
-				} else {
-					moveInZPercent = (endPointZ - currentZ) / framesToMove;
-				}
+				setMovingCoordinates(intersects[0].point.x, 2, intersects[0].point.z, intersects[0].distance)
 			}
 		}
 	}
@@ -879,10 +920,8 @@
 			updateBallMat = !updateBallMat;
 
 			orbitControlsDisabled = false;
-			camera.position.set( globeMesh.position.x + 1, globeMesh.position.x + 1, globeMesh.position.x + 1);
-			camera.lookAt(globeMesh.position.x , globeMesh.position.y, globeMesh.position.z);
-			controls.enabled = true;
-
+			let intersects = raycaster.intersectObject(globeMesh);
+			setMovingCoordinates(globeMesh.position.x, globeMesh.position.y, globeMesh.position.z, intersects[0].distance)
 
 		}
 	}
