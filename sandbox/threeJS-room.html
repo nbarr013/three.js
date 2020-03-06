@@ -30,6 +30,11 @@
 	import {ShaderPass} from '../examples/jsm/postprocessing/ShaderPass.js';
 	import {OutlinePass} from '../examples/jsm/postprocessing/OutlinePass.js';
 	import {FXAAShader} from '../examples/jsm/shaders/FXAAShader.js';
+	import { DDSLoader } from '../examples/jsm/loaders/DDSLoader.js';
+	import { MTLLoader } from '../examples/jsm/loaders/MTLLoader.js';
+	import { OBJLoader } from '../examples/jsm/loaders/OBJLoader.js';
+	import { PLYLoader } from '../examples/jsm/loaders/PLYLoader.js';
+
 
 	let camera, scene, renderer, container, textureLoader, controls;
 	let ballMat, cubeMat, floorMat, floorMesh, finishDisplayGroup, globeMesh, boxMesh, boxMesh2, boxMesh3;
@@ -171,8 +176,8 @@
 					alpha: 1.0,
 					sunDirection: dirLight.position.clone().normalize(),
 					sunColor: 0xffffff,
-					waterColor: "#83eadb",
-					distortionScale: -50,
+					waterColor: "#2deae5",
+					distortionScale: -200,
 					fog: scene.fog !== undefined,
 					clipBias: 1
 				}
@@ -583,6 +588,45 @@
 
 	}
 
+	function loadSofa(){
+
+		var onProgress = function ( xhr ) {
+			if ( xhr.lengthComputable ) {
+				var percentComplete = xhr.loaded / xhr.total * 100;
+				console.log( Math.round( percentComplete, 2 ) + '% downloaded' );
+			}
+
+		};
+
+		var onError = function () {console.log("loading failed")};
+
+		var manager = new THREE.LoadingManager();
+		manager.addHandler( /\.dds$/i, new DDSLoader() );
+
+		// comment in the following line and import TGALoader if your asset uses TGA textures
+		// manager.addHandler( /\.tga$/i, new TGALoader() );
+
+		new MTLLoader( manager )
+				.setPath( '../sandbox/models/Sofa/' )
+				.load( 'Sofa.mtl', function ( materials ) {
+
+					materials.preload();
+
+					new OBJLoader( manager )
+							.setMaterials( materials )
+							.setPath( '../sandbox/models/Sofa/' )
+							.load( 'Sofa.obj', function ( object ) {
+
+								object.position.x = -5;
+								scene.add( object );
+
+							}, onProgress, onError );
+
+				} );
+
+		//
+	}
+
 	function updateRenderForWorld() {
 		renderer = new THREE.WebGLRenderer();
 		renderer.physicallyCorrectLights = true;
@@ -648,7 +692,7 @@
 
 		loadFloor();
 
-		loadOutsideGrass();
+		//TODO loadOutsideGrass();
 
 		loadOutsideAsphalt();
 
@@ -659,6 +703,8 @@
 		loadFinishSpheres();
 
 		loadVideoWall();
+
+		//TODO loadSofa();
 
 		updateRenderForWorld();
 
