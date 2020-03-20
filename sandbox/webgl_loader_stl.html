@@ -18,6 +18,12 @@
 	import Stats from '../examples/jsm/libs/stats.module.js';
 	import {OrbitControls} from '../examples/jsm/controls/OrbitControls.js';
 	import {STLLoader} from '../examples/jsm/loaders/STLLoader.js';
+	import {DDSLoader} from '../examples/jsm/loaders/DDSLoader.js';
+	import {MTLLoader} from '../examples/jsm/loaders/MTLLoader.js';
+	import {OBJLoader} from '../examples/jsm/loaders/OBJLoader.js';
+	import {FBXLoader} from '../examples/jsm/loaders/FBXLoader.js';
+	import {TDSLoader} from '../examples/jsm/loaders/TDSLoader.js';
+	import {TGALoader} from '../examples/jsm/loaders/TGALoader.js';
 
 	import {EffectComposer} from '../examples/jsm/postprocessing/EffectComposer.js';
 	import {RenderPass} from '../examples/jsm/postprocessing/RenderPass.js';
@@ -36,12 +42,23 @@
 
 	let doorHandleMaterial, doorHandleMesh;
 	let camLockMaterial, camLockMesh;
-	let pushBtnMaterial, pushBtnMesh;
-	let krytMaterial, krytMesh;
-	let pushBarMaterial, pushBarMesh;
+
+	let mixer;
+
+
 	let allMeshsLoaded;
 	let numberOfMeshsLoaded = 0;
 
+
+	let onProgress = function (xhr) {
+		if (xhr.lengthComputable) {
+			let percentComplete = xhr.loaded / xhr.total * 100;
+			console.log(Math.round(percentComplete, 2) + '% downloaded');
+		}
+	};
+
+	let onError = function () {
+	};
 
 	init();
 	animate();
@@ -60,28 +77,29 @@
 	}
 
 
-	function meshLoaded(id){
-		let meshArr = [doorHandleMesh, camLockMesh, pushBtnMesh, krytMesh, pushBarMesh];
-		for(let i = 0; i < meshArr.length; i++){
-			if(id === meshArr[i].uuid){
+	function meshLoaded(id) {
+		let meshArr = [doorHandleMesh, camLockMesh, pushBtnMesh];
+		for (let i = 0; i < meshArr.length; i++) {
+			if (id === meshArr[i].uuid) {
 				numberOfMeshsLoaded++;
 			}
 		}
-		if(numberOfMeshsLoaded === meshArr.length){
+		if (numberOfMeshsLoaded === meshArr.length) {
 			allMeshsLoaded = true;
 		}
 	}
-	var onLoad = function ( texture ) {
+
+	var onLoad = function (texture) {
 
 		console.log(texture);
 		console.log("running")
 		let meshArr = [doorHandleMesh, camLockMesh, pushBtnMesh, krytMesh, pushBarMesh];
-		for(let i = 0; i < meshArr.length; i++){
-			if(texture.uuid === meshArr[i].uuid){
+		for (let i = 0; i < meshArr.length; i++) {
+			if (texture.uuid === meshArr[i].uuid) {
 				numberOfMeshsLoaded++;
 			}
 		}
-		if(numberOfMeshsLoaded === meshArr.length){
+		if (numberOfMeshsLoaded === meshArr.length) {
 			allMeshsLoaded = true;
 		}
 	};
@@ -133,72 +151,80 @@
 
 	}
 
-	function loadSchlagePushButton() {
-		pushBtnMaterial = new THREE.MeshPhongMaterial({color: 0xAAAAAA, specular: 0x111111, shininess: 200});
+	function loadDoorThroughObjAndMTL() {
 
-		loader.load('../sandbox/models/SCHLAGE 625 BL-H-DP.stl', function (geometry) {
-			geometry.scale(.2, .2, .2);
-			pushBtnMesh = new THREE.Mesh(geometry, pushBtnMaterial);
+		let manager = new THREE.LoadingManager();
+		manager.addHandler(/\.dds$/i, new DDSLoader());
+		// comment in the following line and import TGALoader if your asset uses TGA textures
+		manager.addHandler(/\.tga$/i, new TGALoader());
 
-			pushBtnMesh.position.set(0, -1, -0.6);
-			pushBtnMesh.rotation.set(-Math.PI / 2, 0, 0);
-			pushBtnMesh.scale.set(0.3, 0.3, 0.3);
+		new MTLLoader(manager)
+				.setPath('../sandbox/models/Room-Door/')
+				.load('Door_Component_BI3.mtl', function (materials) {
 
-			pushBtnMesh.castShadow = true;
-			pushBtnMesh.receiveShadow = true;
+					materials.preload();
 
-			scene.add(pushBtnMesh);
+					new OBJLoader(manager)
+							.setMaterials(materials)
+							.setPath('../sandbox/models/Room-Door/')
+							.load('Door_Component_BI3.obj', function (object) {
 
-		}/*, onLoad*/);
+								object.position.y = -5;
+								scene.add(object);
 
-	}
+							}, onProgress, onError);
 
-	function loadKryptULock() {
-		krytMaterial = new THREE.MeshPhongMaterial({color: 0xAAAAAA, specular: 0x111111, shininess: 200});
+				});
 
-		loader.load('../sandbox/models/U-Lock-Fahgettaboudit.stl', function (geometry) {
-			geometry.scale(.2, .2, .2);
-			krytMesh = new THREE.Mesh(geometry, krytMaterial);
-
-			krytMesh.position.set(0, 0, -3);
-			krytMesh.rotation.set(-Math.PI / 2, 0, 0);
-			krytMesh.scale.set(0.3, 0.3, 0.3);
-
-			krytMesh.castShadow = true;
-			krytMesh.receiveShadow = true;
-
-			scene.add(krytMesh);
-
-		}/*, onLoad*/);
 
 	}
 
-	function loadVonDuprinItems() {
-		pushBarMaterial = new THREE.MeshPhongMaterial({color: 0xAAAAAA, specular: 0x111111, shininess: 200});
 
-		loader.load('../sandbox/models/9957 3-Point Panic.stl', function (geometry) {
-			geometry.scale(.2, .2, .2);
-			pushBarMesh = new THREE.Mesh(geometry, pushBarMaterial);
+	function loadDoorThroughFBX() {
+		var loader = new FBXLoader();
+		loader.load('../sandbox/models/Room-Door/Door_Component_BI3.fbx', function (object) {
+			/*mixer = new THREE.AnimationMixer(object);
+			var action = mixer.clipAction(object.animations[0]);
+			action.play();*/
+			console.log(object);
+			object.scale.set(0.1, 0.1, 0.1);
+			object.position.set(-2, -5, -4);
 
-			pushBarMesh.position.set(4, 0, 0);
-			pushBarMesh.rotation.set(-Math.PI / 2, 0, 0);
-			pushBarMesh.scale.set(0.3, 0.3, 0.3);
-			pushBarMesh.rotateZ(90);
+			object.traverse(function (child) {
+				if (child.isMesh) {
+					child.castShadow = true;
+					child.receiveShadow = true;
+				}
+			});
+			scene.add(object);
+		});
+	}
 
-			pushBarMesh.castShadow = true;
-			pushBarMesh.receiveShadow = true;
+	function loadDoorThrough3ds() {
+		let textureloader = new THREE.TextureLoader();
+		let normal = textureloader.load('../sandbox/models/Room-Door/textures/Door_C.jpg');
 
-			scene.add(pushBarMesh);
+		let doorloader = new TDSLoader();
+		doorloader.setResourcePath('../sandbox/models/Room-Door/');
+		doorloader.load('../sandbox/models/Room-Door/Door_Component_BI3.3ds', function (object) {
+			object.traverse(function (child) {
+				if (child.isMesh) {
+					child.material.normalMap = normal;
+				}
+			});
 
-		}/*, onLoad*/);
+			scene.add(object);
+
+		});
+
 	}
 
 	function loadItems() {
 		loadDoorHandle();
 		loadCamLocks();
-		loadSchlagePushButton();
-		loadKryptULock();
-		loadVonDuprinItems();
+		//loadDoorThroughObjAndMTL();
+		loadDoorThroughFBX();
+		//loadDoorThrough3ds();
 	}
 
 	function doesIntersect(meshToTest) {
@@ -211,13 +237,13 @@
 	}
 
 	function checkForHoverOnItems() {
-		let objsToCheck =  [doorHandleMesh, camLockMesh, pushBtnMesh, krytMesh, pushBarMesh];
+		let objsToCheck = [doorHandleMesh, camLockMesh];
 
-/* TODO add check for hover
-		if (allMeshsLoaded){
-			objsToCheck = [doorHandleMesh, camLockMesh, pushBtnMesh, krytMesh, pushBarMesh];
-		}
-*/
+		/* TODO add check for hover
+				if (allMeshsLoaded){
+					objsToCheck = [doorHandleMesh, camLockMesh];
+				}
+		*/
 
 		let noIntersection = true;
 		for (let i = 0; i < objsToCheck.length; i++) {
@@ -339,6 +365,8 @@
 		render();
 		stats.update();
 		composer.render();
+		//if (mixer) mixer.update(delta);
+
 
 	}
 
