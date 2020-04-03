@@ -581,8 +581,6 @@ function WebGLRenderer( parameters ) {
 
 		animation.stop();
 
-		this.forceContextLoss();
-
 	};
 
 	// Events
@@ -942,7 +940,7 @@ function WebGLRenderer( parameters ) {
 						}
 
 						_gl.bindBuffer( _gl.ARRAY_BUFFER, buffer );
-						_gl.vertexAttribPointer( programAttribute, size, type, normalized, stride * bytesPerElement, offset * bytesPerElement );
+						state.vertexAttribPointer( programAttribute, size, type, normalized, stride * bytesPerElement, offset * bytesPerElement );
 
 					} else {
 
@@ -963,7 +961,7 @@ function WebGLRenderer( parameters ) {
 						}
 
 						_gl.bindBuffer( _gl.ARRAY_BUFFER, buffer );
-						_gl.vertexAttribPointer( programAttribute, size, type, normalized, 0, 0 );
+						state.vertexAttribPointer( programAttribute, size, type, normalized, 0, 0 );
 
 					}
 
@@ -1161,11 +1159,10 @@ function WebGLRenderer( parameters ) {
 		}
 
 		//
+		scene.onBeforeRender( _this, scene, camera, renderTarget || _currentRenderTarget );
 
 		currentRenderState = renderStates.get( scene, camera );
 		currentRenderState.init();
-
-		scene.onBeforeRender( _this, scene, camera, renderTarget || _currentRenderTarget );
 
 		_projScreenMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
 		_frustum.setFromProjectionMatrix( _projScreenMatrix );
@@ -2769,6 +2766,8 @@ function WebGLRenderer( parameters ) {
 
 	this.copyTextureToTexture = function ( position, srcTexture, dstTexture, level ) {
 
+		if ( level === undefined ) level = 0;
+
 		var width = srcTexture.image.width;
 		var height = srcTexture.image.height;
 		var glFormat = utils.convert( dstTexture.format );
@@ -2778,13 +2777,24 @@ function WebGLRenderer( parameters ) {
 
 		if ( srcTexture.isDataTexture ) {
 
-			_gl.texSubImage2D( _gl.TEXTURE_2D, level || 0, position.x, position.y, width, height, glFormat, glType, srcTexture.image.data );
+			_gl.texSubImage2D( _gl.TEXTURE_2D, level, position.x, position.y, width, height, glFormat, glType, srcTexture.image.data );
 
 		} else {
 
-			_gl.texSubImage2D( _gl.TEXTURE_2D, level || 0, position.x, position.y, glFormat, glType, srcTexture.image );
+			if ( srcTexture.isCompressedTexture ) {
+
+				_gl.compressedTexSubImage2D( _gl.TEXTURE_2D, level, position.x, position.y, srcTexture.mipmaps[ 0 ].width, srcTexture.mipmaps[ 0 ].height, glFormat, srcTexture.mipmaps[ 0 ].data );
+
+			} else {
+
+				_gl.texSubImage2D( _gl.TEXTURE_2D, level, position.x, position.y, glFormat, glType, srcTexture.image );
+
+			}
 
 		}
+
+		// Generate mipmaps only when copying level 0
+		if ( level === 0 && dstTexture.generateMipmaps ) _gl.generateMipmap( _gl.TEXTURE_2D );
 
 		state.unbindTexture();
 
