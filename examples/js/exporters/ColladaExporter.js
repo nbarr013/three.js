@@ -1,5 +1,5 @@
+console.warn( "THREE.ColladaExporter: As part of the transition to ES6 Modules, the files in 'examples/js' were deprecated in May 2020 (r117) and will be deleted in December 2020 (r124). You can find more information about developing using ES6 Modules in https://threejs.org/docs/#manual/en/introduction/Installation." );
 /**
- * @author Garrett Johnson / http://gkjohnson.github.io/
  * https://github.com/gkjohnson/collada-exporter-js
  *
  * Usage:
@@ -100,8 +100,8 @@ THREE.ColladaExporter.prototype = {
 			canvas = canvas || document.createElement( 'canvas' );
 			ctx = ctx || canvas.getContext( '2d' );
 
-			canvas.width = image.naturalWidth;
-			canvas.height = image.naturalHeight;
+			canvas.width = image.width;
+			canvas.height = image.height;
 
 			ctx.drawImage( image, 0, 0 );
 
@@ -251,6 +251,15 @@ THREE.ColladaExporter.prototype = {
 					var uvName = `${ meshid }-texcoord`;
 					gnode += getAttribute( bufferGeometry.attributes.uv, uvName, [ 'S', 'T' ], 'float' );
 					triangleInputs += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" set="0" />`;
+
+				}
+
+				// serialize lightmap uvs
+				if ( 'uv2' in bufferGeometry.attributes ) {
+
+					var uvName = `${ meshid }-texcoord2`;
+					gnode += getAttribute( bufferGeometry.attributes.uv2, uvName, [ 'S', 'T' ], 'float' );
+					triangleInputs += `<input semantic="TEXCOORD" source="#${ uvName }" offset="0" set="1" />`;
 
 				}
 
@@ -562,8 +571,8 @@ THREE.ColladaExporter.prototype = {
 					matidsArray = new Array( materials.length );
 
 				}
-				matids = matidsArray.fill()
-					.map( ( v, i ) => processMaterial( materials[ i % materials.length ] ) );
+
+				matids = matidsArray.fill().map( ( v, i ) => processMaterial( materials[ i % materials.length ] ) );
 
 				node +=
 					`<instance_geometry url="#${ meshid }">` +

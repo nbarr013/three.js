@@ -1,9 +1,6 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
-
 import * as THREE from '../../build/three.module.js';
 
+import { ThreeMFLoader } from '../../examples/jsm/loaders/3MFLoader.js';
 import { AMFLoader } from '../../examples/jsm/loaders/AMFLoader.js';
 import { ColladaLoader } from '../../examples/jsm/loaders/ColladaLoader.js';
 import { DRACOLoader } from '../../examples/jsm/loaders/DRACOLoader.js';
@@ -19,13 +16,18 @@ import { SVGLoader } from '../../examples/jsm/loaders/SVGLoader.js';
 import { TDSLoader } from '../../examples/jsm/loaders/TDSLoader.js';
 import { VTKLoader } from '../../examples/jsm/loaders/VTKLoader.js';
 import { VRMLLoader } from '../../examples/jsm/loaders/VRMLLoader.js';
+import { Rhino3dmLoader } from '../../examples/jsm/loaders/3DMLoader.js';
+
+import { TGALoader } from '../../examples/jsm/loaders/TGALoader.js';
 
 import { AddObjectCommand } from './commands/AddObjectCommand.js';
 import { SetSceneCommand } from './commands/SetSceneCommand.js';
 
 import { LoaderUtils } from './LoaderUtils.js';
 
-var Loader = function ( editor ) {
+import { JSZip } from '../../examples/jsm/libs/jszip.module.min.js';
+
+function Loader( editor ) {
 
 	var scope = this;
 
@@ -64,6 +66,8 @@ var Loader = function ( editor ) {
 
 			} );
 
+			manager.addHandler( /\.tga$/i, new TGALoader() );
+
 			for ( var i = 0; i < files.length; i ++ ) {
 
 				scope.loadFile( files[ i ], manager );
@@ -91,11 +95,44 @@ var Loader = function ( editor ) {
 
 		switch ( extension ) {
 
+			case '3dm':
+
+				reader.addEventListener( 'load', function ( event ) {
+
+					var contents = event.target.result;
+
+					var loader = new Rhino3dmLoader();
+					loader.setLibraryPath( '../examples/jsm/libs/rhino3dm/' );
+					loader.parse( contents, function ( object ) {
+
+						editor.execute( new AddObjectCommand( editor, object ) );
+
+					} );
+
+				}, false );
+				reader.readAsArrayBuffer( file );
+
+				break;
+
 			case '3ds':
 
 				reader.addEventListener( 'load', function ( event ) {
 
 					var loader = new TDSLoader();
+					var object = loader.parse( event.target.result );
+
+					editor.execute( new AddObjectCommand( editor, object ) );
+
+				}, false );
+				reader.readAsArrayBuffer( file );
+
+				break;
+
+			case '3mf':
+
+				reader.addEventListener( 'load', function ( event ) {
+
+					var loader = new ThreeMFLoader();
 					var object = loader.parse( event.target.result );
 
 					editor.execute( new AddObjectCommand( editor, object ) );
@@ -504,7 +541,7 @@ var Loader = function ( editor ) {
 
 			default:
 
-				// alert( 'Unsupported file format (' + extension +  ').' );
+				console.error( 'Unsupported file format (' + extension + ').' );
 
 				break;
 
@@ -633,7 +670,12 @@ var Loader = function ( editor ) {
 
 				case 'glb':
 
+					var dracoLoader = new DRACOLoader();
+					dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
+
 					var loader = new GLTFLoader();
+					loader.setDRACOLoader( dracoLoader );
+
 					loader.parse( file.asArrayBuffer(), '', function ( result ) {
 
 						var scene = result.scene;
@@ -647,7 +689,11 @@ var Loader = function ( editor ) {
 
 				case 'gltf':
 
+					var dracoLoader = new DRACOLoader();
+					dracoLoader.setDecoderPath( '../examples/js/libs/draco/gltf/' );
+
 					var loader = new GLTFLoader( manager );
+					loader.setDRACOLoader( dracoLoader );
 					loader.parse( file.asText(), '', function ( result ) {
 
 						var scene = result.scene;
@@ -700,6 +746,6 @@ var Loader = function ( editor ) {
 
 	}
 
-};
+}
 
 export { Loader };

@@ -1,7 +1,3 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
-
 import {
 	BufferAttribute,
 	BufferGeometry,
@@ -10,8 +6,7 @@ import {
 	Matrix4,
 	Mesh,
 	MeshStandardMaterial,
-	Vector3,
-	VertexColors
+	Vector3
 } from '../../../build/three.module.js';
 
 function TubePainter() {
@@ -34,7 +29,7 @@ function TubePainter() {
 	geometry.drawRange.count = 0;
 
 	let material = new MeshStandardMaterial( {
-		vertexColors: VertexColors
+		vertexColors: true
 	} );
 
 	let mesh = new Mesh( geometry, material );

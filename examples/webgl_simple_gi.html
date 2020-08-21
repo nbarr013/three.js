@@ -44,7 +44,6 @@
 				var rt = new THREE.WebGLRenderTarget( SIZE, SIZE, {
 					wrapS: THREE.ClampToEdgeWrapping,
 					wrapT: THREE.ClampToEdgeWrapping,
-					stencilBuffer: false,
 					depthBuffer: true
 				} );
 
@@ -189,6 +188,8 @@
 				new SimpleGI( renderer, scene );
 
 				var controls = new OrbitControls( camera, renderer.domElement );
+				controls.minDistance = 1;
+				controls.maxDistance = 10;
 
 				window.addEventListener( 'resize', onWindowResize, false );
 

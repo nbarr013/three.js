@@ -1,8 +1,4 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- * @author zz85 / http://joshuakoo.com/
- * @author yomboprime / https://yombo.org
- */
+console.warn( "THREE.SVGLoader: As part of the transition to ES6 Modules, the files in 'examples/js' were deprecated in May 2020 (r117) and will be deleted in December 2020 (r124). You can find more information about developing using ES6 Modules in https://threejs.org/docs/#manual/en/introduction/Installation." );
 
 THREE.SVGLoader = function ( manager ) {
 
@@ -26,9 +22,28 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 
 		var loader = new THREE.FileLoader( scope.manager );
 		loader.setPath( scope.path );
+		loader.setRequestHeader( scope.requestHeader );
 		loader.load( url, function ( text ) {
 
-			onLoad( scope.parse( text ) );
+			try {
+
+				onLoad( scope.parse( text ) );
+
+			} catch ( e ) {
+
+				if ( onError ) {
+
+					onError( e );
+
+				} else {
+
+					console.error( e );
+
+				}
+
+				scope.manager.itemError( url );
+
+			}
 
 		}, onProgress, onError );
 
@@ -49,6 +64,10 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 			switch ( node.nodeName ) {
 
 				case 'svg':
+					break;
+
+				case 'style':
+					parseCSSStylesheet( node );
 					break;
 
 				case 'g':
@@ -91,7 +110,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 					break;
 
 				default:
-					console.log( node );
+					// console.log( node );
 
 			}
 
@@ -192,6 +211,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'H':
@@ -207,6 +227,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'V':
@@ -222,6 +243,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'L':
@@ -238,6 +260,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'C':
@@ -261,6 +284,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'S':
@@ -284,6 +308,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'Q':
@@ -305,6 +330,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'T':
@@ -328,6 +354,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'A':
@@ -347,6 +374,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'm':
@@ -372,6 +400,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'h':
@@ -387,6 +416,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'v':
@@ -402,6 +432,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'l':
@@ -418,6 +449,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'c':
@@ -441,6 +473,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 's':
@@ -464,6 +497,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'q':
@@ -485,6 +519,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 't':
@@ -508,6 +543,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'a':
@@ -527,6 +563,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							if ( j === 0 && doSetFirstPoint === true ) firstPoint.copy( point );
 
 						}
+
 						break;
 
 					case 'Z':
@@ -541,6 +578,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 							isFirstPoint = true;
 
 						}
+
 						break;
 
 					default:
@@ -555,6 +593,34 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 			}
 
 			return path;
+
+		}
+
+		function parseCSSStylesheet( node ) {
+
+			if ( ! node.sheet || ! node.sheet.cssRules || ! node.sheet.cssRules.length ) return;
+
+			for ( var i = 0; i < node.sheet.cssRules.length; i ++ ) {
+
+				var stylesheet = node.sheet.cssRules[ i ];
+
+				if ( stylesheet.type !== 1 ) continue;
+
+				var selectorList = stylesheet.selectorText
+					.split( /,/gm )
+					.filter( Boolean )
+					.map( i => i.trim() );
+
+				for ( var j = 0; j < selectorList.length; j ++ ) {
+
+					stylesheets[ selectorList[ j ] ] = Object.assign(
+						stylesheets[ selectorList[ j ] ] || {},
+						stylesheet.style
+					);
+
+				}
+
+			}
 
 		}
 
@@ -794,6 +860,29 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 
 			style = Object.assign( {}, style ); // clone style
 
+			var stylesheetStyles = {};
+
+			if ( node.hasAttribute( 'class' ) ) {
+
+				var classSelectors = node.getAttribute( 'class' )
+					.split( /\s/ )
+					.filter( Boolean )
+					.map( i => i.trim() );
+
+				for ( var i = 0; i < classSelectors.length; i ++ ) {
+
+					stylesheetStyles = Object.assign( stylesheetStyles, stylesheets[ '.' + classSelectors[ i ] ] );
+
+				}
+
+			}
+
+			if ( node.hasAttribute( 'id' ) ) {
+
+				stylesheetStyles = Object.assign( stylesheetStyles, stylesheets[ '#' + node.getAttribute( 'id' ) ] );
+
+			}
+
 			function addStyle( svgName, jsName, adjustFunction ) {
 
 				if ( adjustFunction === undefined ) adjustFunction = function copy( v ) {
@@ -803,6 +892,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 				};
 
 				if ( node.hasAttribute( svgName ) ) style[ jsName ] = adjustFunction( node.getAttribute( svgName ) );
+				if ( stylesheetStyles[ svgName ] ) style[ jsName ] = adjustFunction( stylesheetStyles[ svgName ] );
 				if ( node.style && node.style[ svgName ] !== '' ) style[ jsName ] = adjustFunction( node.style[ svgName ] );
 
 			}
@@ -821,12 +911,14 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 
 			addStyle( 'fill', 'fill' );
 			addStyle( 'fill-opacity', 'fillOpacity', clamp );
+			addStyle( 'opacity', 'opacity', clamp );
 			addStyle( 'stroke', 'stroke' );
 			addStyle( 'stroke-opacity', 'strokeOpacity', clamp );
 			addStyle( 'stroke-width', 'strokeWidth', positive );
 			addStyle( 'stroke-linejoin', 'strokeLineJoin' );
 			addStyle( 'stroke-linecap', 'strokeLineCap' );
 			addStyle( 'stroke-miterlimit', 'strokeMiterLimit', positive );
+			addStyle( 'visibility', 'visibility' );
 
 			return style;
 
@@ -1233,6 +1325,7 @@ THREE.SVGLoader.prototype = Object.assign( Object.create( THREE.Loader.prototype
 		//
 
 		var paths = [];
+		var stylesheets = {};
 
 		var transformStack = [];
 
@@ -1435,6 +1528,7 @@ THREE.SVGLoader.pointsToStrokeWithBuffers = function () {
 					joinIsOnLeftSide = false;
 
 				}
+
 				if ( iPoint === 1 ) initialJoinIsOnLeftSide = joinIsOnLeftSide;
 
 				tempV2_3.subVectors( nextPoint, currentPoint );
@@ -1462,6 +1556,7 @@ THREE.SVGLoader.pointsToStrokeWithBuffers = function () {
 						innerSideModified = true;
 
 					}
+
 					outerPoint.copy( tempV2_5 ).add( currentPoint );
 					innerPoint.add( currentPoint );
 

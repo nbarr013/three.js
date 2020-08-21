@@ -15,7 +15,7 @@
 		<div id="container"></div>
 		<div id="info">Ammo.js physics terrain heightfield demo</div>
 
-		<script src="js/libs/ammo.js"></script>
+		<script src="js/libs/ammo.wasm.js"></script>
 
 		<script type="module">
 
@@ -103,6 +103,7 @@
 				camera.lookAt( 0, 0, 0 );
 
 				var controls = new OrbitControls( camera, renderer.domElement );
+				controls.enableZoom = false;
 
 				var geometry = new THREE.PlaneBufferGeometry( terrainWidthExtents, terrainDepthExtents, terrainWidth - 1, terrainDepth - 1 );
 				geometry.rotateX( - Math.PI / 2 );
