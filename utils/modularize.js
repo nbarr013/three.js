@@ -9,7 +9,6 @@ var files = [
 	{ path: 'animation/CCDIKSolver.js', dependencies: [], ignoreList: [ 'SkinnedMesh' ] },
 	{ path: 'animation/MMDAnimationHelper.js', dependencies: [ { name: 'CCDIKSolver', path: 'animation/CCDIKSolver.js' }, { name: 'MMDPhysics', path: 'animation/MMDPhysics.js' } ], ignoreList: [ 'AnimationClip', 'Audio', 'Camera', 'SkinnedMesh' ] },
 	{ path: 'animation/MMDPhysics.js', dependencies: [], ignoreList: [ 'SkinnedMesh' ] },
-	{ path: 'animation/TimelinerController.js', dependencies: [], ignoreList: [] },
 
 	{ path: 'cameras/CinematicCamera.js', dependencies: [ { name: 'BokehShader', path: 'shaders/BokehShader2.js' }, { name: 'BokehDepthShader', path: 'shaders/BokehShader2.js' } ], ignoreList: [] },
 
@@ -41,7 +40,6 @@ var files = [
 	{ path: 'exporters/OBJExporter.js', dependencies: [], ignoreList: [] },
 	{ path: 'exporters/PLYExporter.js', dependencies: [], ignoreList: [] },
 	{ path: 'exporters/STLExporter.js', dependencies: [], ignoreList: [] },
-	{ path: 'exporters/TypedGeometryExporter.js', dependencies: [], ignoreList: [] },
 
 	{ path: 'geometries/BoxLineGeometry.js', dependencies: [], ignoreList: [] },
 	{ path: 'geometries/ConvexGeometry.js', dependencies: [ { name: 'ConvexHull', path: 'math/ConvexHull.js' } ], ignoreList: [] },

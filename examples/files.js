@@ -317,8 +317,14 @@ var files = {
 		"webgl2_materials_texture2darray",
 		"webgl2_materials_texture3d",
 		"webgl2_multisampled_renderbuffers",
+		"webgl2_volume_cloud",
 		"webgl2_volume_instancing",
 		"webgl2_volume_perlin"
+	],
+	"webgpu": [
+		"webgpu_sandbox",
+		"webgpu_rtt",
+		"webgpu_compute",
 	],
 	"webaudio": [
 		"webaudio_orientation",
@@ -336,6 +342,7 @@ var files = {
 		"webxr_vr_handinput",
 		"webxr_vr_handinput_cubes",
 		"webxr_vr_handinput_profiles",
+		"webxr_vr_haptics",
 		"webxr_vr_lorenzattractor",
 		"webxr_vr_panorama",
 		"webxr_vr_panorama_depth",
@@ -354,7 +361,6 @@ var files = {
 		"physics_ammo_volume"
 	],
 	"misc": [
-		"misc_animation_authoring",
 		"misc_animation_groups",
 		"misc_animation_keys",
 		"misc_boxselection",
@@ -372,7 +378,8 @@ var files = {
 		"misc_exporter_obj",
 		"misc_exporter_ply",
 		"misc_exporter_stl",
-		"misc_lookat",
+		"misc_legacy",
+		"misc_lookat"
 	],
 	"css2d": [
 		"css2d_label"
